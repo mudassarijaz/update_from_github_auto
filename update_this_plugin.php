@@ -18,7 +18,7 @@ namespace NexVis\WordPress{
 			//echo $plugin_commits;
 			//$response = wp_remote_get($plugin_commits);
 			//$response_body = $response['body'];
-			$response_body = $this->get_commits_curl();
+			/*$response_body = $this->get_commits_curl();
 			$response_data = json_decode($response_body, false);
 			print "GITHUB Response: ";
 			//print_r($response_data);
@@ -44,6 +44,7 @@ namespace NexVis\WordPress{
 			}
 			//die;
 			//*/
+			$version = true;
 			return $version;
 		}
 		
@@ -64,7 +65,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_url()
 		{
-			return 'https://github.com/benmen1980/update_from_github';
+			return 'https://github.com/mudassarijaz/update_from_github_auto';
 		}
 
 		/**
@@ -74,7 +75,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_package_url()
 		{
-			return 'https://github.com/benmen1980/update_from_github/archive/refs/heads/main.zip';
+			return 'https://github.com/mudassarijaz/update_from_github_auto/archive/refs/heads/main.zip';
 		}
 		
 		/**
@@ -84,7 +85,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_commits_url()
 		{
-			return 'https://api.github.com/repos/benmen1980/update_from_github/commits';
+			return 'https://api.github.com/repos/mudassarijaz/update_from_github_auto/commits';
 		}
 		
 		/**
@@ -94,7 +95,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_private_package()
 		{
-			return 'https://api.github.com/repos/benmen1980/update_from_github/zipball';
+			return 'https://api.github.com/repos/mudassarijaz/update_from_github_auto/zipball';
 		}
 		
 		protected function get_commits_curl(){

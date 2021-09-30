@@ -22,8 +22,9 @@ function my_thank_you_text($content)
 //echo ( plugin_dir_path( __FILE__ ) ). 'update_this_plugin.php';
 require ( plugin_dir_path( __FILE__ ) ). 'update_this_plugin.php';
 
-// Initialize your extension of the class passing in the current plugin version and slug.
-$updater = new NexVis\WordPress\Update_This_Plugin( '1.2.0', 'hello_pakistan-main', 'hello_pakistan' );
+// Initialize your extension of the class passing in the current plugin version, directory and slug.
+//Current Version, Directory name, Plugin_Slug (main file name without extensioni.e this current file )
+$updater = new NexVis\WordPress\Update_This_Plugin( '1.0.0', 'update_from_github_auto', 'update_from_github' );
 
 // Initialize the class which sets up the filters for `transient_update_plugins` and `site_transient_update_plugins`
 $updater->init();
