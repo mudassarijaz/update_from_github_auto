@@ -27,6 +27,9 @@ abstract class WP_NVT_Plugin_Updater {
 	 * @var string
 	 */
 	private $slug;
+	
+	private $gitusername;
+	private $gitrepo;
 
 	/**
 	 * The constructor.
@@ -34,11 +37,13 @@ abstract class WP_NVT_Plugin_Updater {
 	 * @param string $current_version The current plugin version.
 	 * @param string $slug            The slug of the plugin.
 	 */
-	public function __construct( string $current_version, string $directory, string $slug )
+	public function __construct( string $current_version, string $directory, string $slug, string $gitusername, string $gitrepo )
 	{
 		$this->current_version = $current_version;
 		$this->directory = $directory;
 		$this->slug = $slug;
+		$this->gitusername = $gitusername;
+		$this->gitrepo = $gitrepo;
 	}
 
 	/**
@@ -92,6 +97,13 @@ abstract class WP_NVT_Plugin_Updater {
 		add_filter( 'site_transient_update_plugins', array( $this,  'filter_plugin_update_data' ) );
 		register_activation_hook( $this->directory . '/' . $this->slug . '.php', array( $this, 'filter_upgrader_post_install') );
 		add_filter( 'upgrader_post_install', array( $this, 'filter_upgrader_post_install'), 10, 2 );
+		//To avoid displaying new version number.
+		add_action( $this->directory . '/' . $this->slug . '.php', 'change_plugin_update_message', 10, 2 );
+		
+		//Option to keep track of last update check (To avoid too many update check requests)
+		$last_update_check = get_option( $this->slug."_last_update_check" );
+		if(!$last_update_check)
+			add_option( $this->slug."_last_update_check", time());
 	}
 
 	/**
@@ -134,7 +146,8 @@ abstract class WP_NVT_Plugin_Updater {
 	{
 		return (object) array(
 			'slug'         => $this->slug,
-			'new_version'  => $this->latest_version,
+			//'new_version'  => $this->latest_version,
+			'new_version'  => '', //Avoiding displaying new version. 
 			'url'          => $this->get_url(),
 			'package'      => $this->get_package_url(),
 		);
@@ -154,6 +167,30 @@ abstract class WP_NVT_Plugin_Updater {
 	
 	protected function get_current_version(){
 		return $this->current_version;
+	}
+	
+	//Change the default wordpress update message to avoid displaying version number. 
+	function change_plugin_update_message( $data, $response ) {
+		printf(
+			'<div class="update-message"><p><strong>%s</strong></p></div>',
+			__( 'New Update is available, please update plugin now.', 'text-domain' )
+		);
+	}
+	
+	protected function get_directory(){
+		return $this->directory;
+	}
+	
+	protected function get_slug(){
+		return $this->slug;
+	}
+	
+	protected function get_gitusername(){
+		return $this->gitusername;
+	}
+	
+	protected function get_gitrepo(){
+		return $this->gitrepo;
 	}
 }
 

@@ -18,33 +18,49 @@ namespace NexVis\WordPress{
 			//echo $plugin_commits;
 			//$response = wp_remote_get($plugin_commits);
 			//$response_body = $response['body'];
-			/*$response_body = $this->get_commits_curl();
-			$response_data = json_decode($response_body, false);
-			print "GITHUB Response: ";
-			//print_r($response_data);
-			
-			//echo "here we are";
-			//echo "<pre>"; print_r($response_data[0]);
-			$sTimeLatest = $response_data[0]->commit->author->date; 
-			//echo "<br>Latest Update";
-			$iTimeLatest = strtotime($sTimeLatest);
-			//echo $iTimeLatest;
-			
-			$last_updated = (int) $this->get_last_update_time();
-			//echo "<br>Last Updated: ";
-			//echo $last_updated;
-			//print_r("What? new version?");
-			if( $iTimeLatest > $last_updated){ //Plugin has update
-				//print_r("What? Yes new version?");
-				$version = true;
+			//Get Last Update time and it should be 12 hours old
+			$delay = 12 * 3600; //12 Hours 
+			$delay = 2000;
+			$last_update_check = get_option( $this->get_slug()."_last_update_check" );
+			echo "Last Check: ".$last_update_check;
+			echo " - Diff by now: ".(time() - $last_update_check);
+			if( (time() - $last_update_check) > $delay){ //Too early to test.
+				$response_body = $this->get_commits_curl();
+								
+				$response_data = json_decode($response_body, false);
+				print "GITHUB Response: ";
+				//print_r($response_data);
+				
+				//echo "here we are";
+				echo "<pre>"; print_r($response_data);
+				//exit;
+				$sTimeLatest = $response_data[0]->commit->author->date; 
+				echo "<br>Latest Commit: ";
+				$iTimeLatest = strtotime($sTimeLatest);
+				echo $iTimeLatest;
+				
+				//$last_updated = (int) $this->get_last_update_time();
+				$last_updated = strtotime("09-25-2021");
+				echo "<br>Last Updated: ";
+				echo $last_updated;
+				//print_r("What? new version?");
+				if( $iTimeLatest > $last_updated){ //Plugin has update
+					print_r("What? Yes new version?");
+					$version = true;
+				}else {
+					print_r("What? No new version?");
+					$version = $this->get_current_version();
+					$version = false;
+				}
+				//Save this check time
+				update_option( $this->get_slug()."_last_update_check", time() );
 			}else {
-				//print_r("What? No new version?");
-				$version = $this->get_current_version();
 				$version = false;
 			}
+			echo "</pre>";
 			//die;
 			//*/
-			$version = true;
+			//$version = false;
 			return $version;
 		}
 		
@@ -65,7 +81,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_url()
 		{
-			return 'https://github.com/mudassarijaz/update_from_github_auto';
+			return 'https://github.com/'.$this->get_gitusername().'/'.$this->get_gitrepo();
 		}
 
 		/**
@@ -75,7 +91,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_package_url()
 		{
-			return 'https://github.com/mudassarijaz/update_from_github_auto/archive/refs/heads/main.zip';
+			return 'https://github.com/'.$this->get_gitusername().'/'.$this->get_gitrepo().'/archive/refs/heads/main.zip';
 		}
 		
 		/**
@@ -85,7 +101,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_commits_url()
 		{
-			return 'https://api.github.com/repos/mudassarijaz/update_from_github_auto/commits';
+			return 'https://api.github.com/repos/'.$this->get_gitusername().'/'.$this->get_gitrepo().'/commits';
 		}
 		
 		/**
@@ -95,7 +111,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_private_package()
 		{
-			return 'https://api.github.com/repos/mudassarijaz/update_from_github_auto/zipball';
+			return 'https://api.github.com/repos/'.$this->get_gitusername().'/'.$this->get_gitrepo().'/zipball';
 		}
 		
 		protected function get_commits_curl(){
@@ -103,12 +119,22 @@ namespace NexVis\WordPress{
 			$url = $this->get_commits_url();
 			$access_token = "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";
 			$access_token = "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"; //Expired
-			$access_token = "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"; //till 28-12-2021
-			$url = $url."?access_token=".$access_token;
+			$access_token = "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"; //till 28-12-2021
+			//$url = $url."?access_token=".$access_token;
+			$encoded = urlencode('access_token')."=".urlencode($access_token);
 			
+			$client_id = "6127c575c02c40d5836e";
+			$client_secret = "631e3fbd4ba6ad360efb31c8d6d17fe815ba720d";
+			
+			//$url = "https://github.com/login/oauth/access_token";
+			
+			//$this->github_access_token();
+			//exit;
 			//The repo we want to get
 			curl_setopt($objCurl, CURLOPT_URL, $url);
 			
+			//curl_setopt($objCurl, CURLOPT_POST, 1);
+			//curl_setopt($objCurl, CURLOPT_POSTFIELDS,  $encoded);
 			//To comply with https://developer.github.com/v3/#user-agent-required
 			curl_setopt($objCurl, CURLOPT_USERAGENT, "mudassarijaz"); 
 			
@@ -120,6 +146,64 @@ namespace NexVis\WordPress{
 			$response = curl_exec($objCurl);
 			
 			return $response;
+		}
+		
+		protected function github_access_token(){
+			/**
+			 * Replace the values below with your integration's information found on the Github OAuth App.
+			 */
+			$clientId = '6127c575c02c40d5836e';
+			$clientSecret = '631e3fbd4ba6ad360efb31c8d6d17fe815ba720d';
+
+			/**
+			 * Where to redirect to after the OAuth 2 flow was completed.
+			 * Make sure this matches the information of your integration settings on the marketplace build page.
+			 */
+			$redirectUri = 'http://localhost/travelly/wp-admin/plugins.php?';
+
+			$auth_url = "https://github.com/login/oauth/authorize";
+			$token_url = "https://github.com/login/oauth/access_token";
+			
+			$session_code = wp_get_session_token();
+			
+			/**
+				 * Request an access authorization code.
+				 */
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $auth_url);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_POST, false);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, [
+					'client_id' => $clientId,
+					'code' => $session_code,
+					'accept' => 'json',
+				]);
+
+				$response = curl_exec($ch);
+				print_r($response);
+				$data = json_decode($response, true);
+				print_r($data);
+				exit;
+				/**
+				 * Request an access token based on the received authorization code.
+				 */
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $token_url);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($ch, CURLOPT_POST, true);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, [
+					'client_id' => $clientId,
+					'client_secret' => $clientSecret,
+					'code' => $session_code,
+					'accept' => 'json',
+				]);
+
+				$response = curl_exec($ch);
+				print_r($response);
+				$data = json_decode($response, true);
+				print "Access Token Request Response: ";
+				print_r($data);
+				//$accessToken = $data['access_token'];
 		}
 	}
 }
