@@ -126,7 +126,7 @@ namespace NexVis\WordPress{
 			$objCurl = curl_init();
 			$url = $this->get_commits_url();
 			//$url = $url."?access_token=".$access_token;
-			$encoded = urlencode('access_token')."=".urlencode($access_token);
+			//$encoded = urlencode('access_token')."=".urlencode($access_token);
 			
 			//$url = "https://github.com/login/oauth/access_token";
 			
