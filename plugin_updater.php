@@ -155,7 +155,7 @@ abstract class WP_NVT_Plugin_Updater {
 		return (object) array(
 			'slug'         => $this->slug,
 			//'new_version'  => $this->latest_version,
-			'new_version'  => '2.0.0', //Avoiding displaying new version. 
+			'new_version'  => '.', //Avoiding displaying new version. 
 			'url'          => $this->get_url(),
 			'package'      => $this->get_package_url(),
 		);
