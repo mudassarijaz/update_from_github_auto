@@ -22,45 +22,53 @@ namespace NexVis\WordPress{
 			$delay = 12 * 3600; //12 Hours 
 			$delay = 2000;
 			$last_update_check = get_option( $this->get_slug()."_last_update_check" );
-			echo "Last Check: ".$last_update_check;
-			echo " - Diff by now: ".(time() - $last_update_check);
+			//echo "Last Check: ".$last_update_check;
+			//echo " - Diff by now: ".(time() - $last_update_check);
 			if( (time() - $last_update_check) > $delay){ //Too early to test.
 				$response_body = $this->get_commits_curl();
 								
 				$response_data = json_decode($response_body, false);
-				print "GITHUB Response: ";
+				//print "GITHUB Response: ";
 				//print_r($response_data);
 				
 				//echo "here we are";
-				echo "<pre>"; print_r($response_data);
+				//echo "<pre>"; print_r($response_data);
 				//exit;
 				$sTimeLatest = $response_data[0]->commit->author->date; 
-				echo "<br>Latest Commit: ";
+				//echo "<br>Latest Commit: ";
 				$iTimeLatest = strtotime($sTimeLatest);
-				echo $iTimeLatest;
+				//echo $iTimeLatest;
 				
 				//$last_updated = (int) $this->get_last_update_time();
 				$last_updated = strtotime("09-25-2021");
-				echo "<br>Last Updated: ";
-				echo $last_updated;
+				//echo "<br>Last Updated: ";
+				//echo $last_updated;
 				//print_r("What? new version?");
 				if( $iTimeLatest > $last_updated){ //Plugin has update
-					print_r("What? Yes new version?");
+					//print_r("What? Yes new version?");
 					$version = true;
+					update_option( $this->get_slug()."_update_available", 'yes' );
 				}else {
-					print_r("What? No new version?");
+					//print_r("What? No new version?");
 					$version = $this->get_current_version();
 					$version = false;
 				}
 				//Save this check time
 				update_option( $this->get_slug()."_last_update_check", time() );
+				
 			}else {
 				$version = false;
 			}
-			echo "</pre>";
+			//echo "</pre>";
 			//die;
 			//*/
 			//$version = false;
+			$update_available = get_option( $this->get_slug()."_update_available" );
+			if($update_available == 'yes' )
+				$version = true;
+			else 
+				$version = false;
+			
 			return $version;
 		}
 		
@@ -91,7 +99,7 @@ namespace NexVis\WordPress{
 		 */
 		protected function get_package_url()
 		{
-			return 'https://github.com/'.$this->get_gitusername().'/'.$this->get_gitrepo().'/archive/refs/heads/main.zip';
+			return 'https://github.com/'.$this->get_gitusername().'/'.$this->get_gitrepo().'/archive/refs/heads/'.$this->get_gitbranch().'.zip';
 		}
 		
 		/**
@@ -117,14 +125,8 @@ namespace NexVis\WordPress{
 		protected function get_commits_curl(){
 			$objCurl = curl_init();
 			$url = $this->get_commits_url();
-			$access_token = "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";
-			$access_token = "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"; //Expired
-			$access_token = "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"; //till 28-12-2021
 			//$url = $url."?access_token=".$access_token;
 			$encoded = urlencode('access_token')."=".urlencode($access_token);
-			
-			$client_id = "6127c575c02c40d5836e";
-			$client_secret = "631e3fbd4ba6ad360efb31c8d6d17fe815ba720d";
 			
 			//$url = "https://github.com/login/oauth/access_token";
 			
@@ -152,9 +154,7 @@ namespace NexVis\WordPress{
 			/**
 			 * Replace the values below with your integration's information found on the Github OAuth App.
 			 */
-			$clientId = '6127c575c02c40d5836e';
-			$clientSecret = '631e3fbd4ba6ad360efb31c8d6d17fe815ba720d';
-
+			
 			/**
 			 * Where to redirect to after the OAuth 2 flow was completed.
 			 * Make sure this matches the information of your integration settings on the marketplace build page.
@@ -180,10 +180,10 @@ namespace NexVis\WordPress{
 				]);
 
 				$response = curl_exec($ch);
-				print_r($response);
+				//print_r($response);
 				$data = json_decode($response, true);
-				print_r($data);
-				exit;
+				//print_r($data);
+				//exit;
 				/**
 				 * Request an access token based on the received authorization code.
 				 */

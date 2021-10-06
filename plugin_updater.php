@@ -30,6 +30,7 @@ abstract class WP_NVT_Plugin_Updater {
 	
 	private $gitusername;
 	private $gitrepo;
+	private $gitbranch;
 
 	/**
 	 * The constructor.
@@ -37,13 +38,14 @@ abstract class WP_NVT_Plugin_Updater {
 	 * @param string $current_version The current plugin version.
 	 * @param string $slug            The slug of the plugin.
 	 */
-	public function __construct( string $current_version, string $directory, string $slug, string $gitusername, string $gitrepo )
+	public function __construct( string $current_version, string $directory, string $slug, string $gitusername, string $gitrepo, string $gitbranch = 'main' )
 	{
 		$this->current_version = $current_version;
 		$this->directory = $directory;
 		$this->slug = $slug;
 		$this->gitusername = $gitusername;
 		$this->gitrepo = $gitrepo;
+		$this->gitbranch = $gitbranch;
 	}
 
 	/**
@@ -104,6 +106,12 @@ abstract class WP_NVT_Plugin_Updater {
 		$last_update_check = get_option( $this->slug."_last_update_check" );
 		if(!$last_update_check)
 			add_option( $this->slug."_last_update_check", time());
+		
+		$update_available = get_option( $this->slug."_update_available" );
+		if(!$update_available)
+			add_option( $this->slug."_update_available", 'no');
+
+		
 	}
 
 	/**
@@ -128,11 +136,11 @@ abstract class WP_NVT_Plugin_Updater {
 		// Only set the response if the plugin has a new release.
 		$this->latest_version = $this->get_latest_version();
         //if ( version_compare( $this->current_version, $this->latest_version ) ) {
-		if( time() > ($update_plugins->last_checked+(60*5)) ){
+		//if( time() > ($update_plugins->last_checked+(60*5)) ){
 			if ( $this->is_latest_version_available() ) {
 				$update_plugins->response[ $this->directory . '/' . $this->slug . '.php'] = $this->get_plugin_response_data();
 			}
-		}
+		//}
 		
 		return $update_plugins;
 	}
@@ -147,7 +155,7 @@ abstract class WP_NVT_Plugin_Updater {
 		return (object) array(
 			'slug'         => $this->slug,
 			//'new_version'  => $this->latest_version,
-			'new_version'  => '', //Avoiding displaying new version. 
+			'new_version'  => '2.0.0', //Avoiding displaying new version. 
 			'url'          => $this->get_url(),
 			'package'      => $this->get_package_url(),
 		);
@@ -156,6 +164,7 @@ abstract class WP_NVT_Plugin_Updater {
 	function filter_upgrader_post_install(  $response = null, $hook_extra = null, $result = null ){
 		//print_r("What? post intall/activate");
 		update_option("_last_updated_".$this->slug, time());
+		update_option( $this->slug."_update_available", 'no');
 		return $response;
 	}
 	
@@ -191,6 +200,10 @@ abstract class WP_NVT_Plugin_Updater {
 	
 	protected function get_gitrepo(){
 		return $this->gitrepo;
+	}
+	
+	protected function get_gitbranch(){
+		return $this->gitbranch;
 	}
 }
 
