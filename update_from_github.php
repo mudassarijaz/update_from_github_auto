@@ -5,7 +5,7 @@
  * Plugin Name: Update from Public Git Hub example Plugin
  * Plugin URI: http://simplyct.co.il/update-from-github-plugin
  * Description: Example how to update from GitHub
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: Roy
  * Author URI: http://www.simplyct.co.il
  */
